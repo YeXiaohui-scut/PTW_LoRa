@@ -1,0 +1,67 @@
+# ═══════════════════════════════════════════════════════════
+# LoRA Watermarking Configuration for StyleGAN2
+# ═══════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────
+# Model Configuration
+# ───────────────────────────────────────────────────────────
+model:
+  model_type: stylegan      # ← 不要加引号
+  model_arch: stylegan2
+  model_ckpt: pretrained/ffhq.pkl
+
+# ───────────────────────────────────────────────────────────
+# Watermarking Key Configuration
+# ───────────────────────────────────────────────────────────
+watermark:
+  message: HELLO            # ← 字符串可以不加引号
+  bitlen: 25                # ← 数字不要加引号
+  decoder_arch: resnet18
+  truncation_psi: 0.7       # ← 浮点数不要加引号
+  ir_se50_weights: null     # ← null 不要加引号
+
+# ───────────────────────────────────────────────────────────
+# LoRA Configuration
+# ───────────────────────────────────────────────────────────
+lora:
+  rank: 8                   # ← 不要写成 "8"
+  alpha: 1.0                # ← 不要写成 "1.0"
+  dropout: 0. 0
+  target_layers: all        # ← 不要加引号
+
+# ───────────────────────────────────────────────────────────
+# Training Configuration
+# ───────────────────────────────────────────────────────────
+training:
+  lr: 0.001                 # ← 关键！不要写成 "0. 001" 或 "1e-3"
+  # 或者使用科学计数法（不加引号）：
+  # lr: 1. 0e-3
+  
+  batch_size: 4
+  eval_batch_size: 16
+  gradient_accumulation_steps: 1
+  
+  lambda_lpips: 1.0         # ← 不要加引号
+  lambda_id: 0.0
+  
+  use_dlws: true            # ← 布尔值不要加引号
+  dlws_threshold: 0.95
+  dlws_wm_boost: 2.0
+  dlws_lpips_boost: 3.0
+
+# ───────────────────────────────────────────────────────────
+# Environment Configuration
+# ───────────────────────────────────────────────────────────
+environment:
+  device: cuda              # ← 字符串可以不加引号
+  log_every: 100
+  save_every: 1000
+  logging_tool: wandb
+
+# ───────────────────────────────────────────────────────────
+# Output Configuration
+# ───────────────────────────────────────────────────────────
+output:
+  ckpt_dir: checkpoints
+  ckpt_name: lora_wm_stylegan2_ffhq. pt
+  log_dir: logs

@@ -1,0 +1,74 @@
+"""
+训练 LoRA 水印的完整示例
+"""
+
+from src.models.lora_stylegan import LoRAStyleGAN
+from src.watermarking_key.lora_wm_key import LoRAWatermarkingKey
+from src.trainer.lora_trainer import LoRAWatermarkTrainer
+from src.arguments.model_args import ModelArgs
+from src.arguments.wm_key_args import WatermarkingKeyArgs
+from src. arguments.embed_args import EmbedArgs
+from src.arguments.env_args import EnvArgs
+
+
+def main():
+    # ═══════════════════════════════════════════════════════════
+    # 1. 配置参数
+    # ═══════════════════════════════════════════════════════════
+    
+    model_args = ModelArgs(
+        model_type="stylegan",
+        model_arch="stylegan2",  # 或 "stylegan3", "stylegan-xl"
+        model_ckpt="path/to/stylegan2-ffhq. pkl"
+    )
+    
+    wm_key_args = WatermarkingKeyArgs(
+        message="HELLO",  # 5个字符 = 25 bits
+        bitlen=25,
+        decoder_channels=64,
+        num_blocks=4,
+        ir_se50_weights="path/to/ir_se50. pth"  # 可选
+    )
+    
+    embed_args = EmbedArgs(
+        ckpt="checkpoints/lora_watermark. pt",
+        ptw_lr=1e-3,
+        lambda_lpips=1.0,
+        lambda_id=0.0  # 非人脸数据集设为 0
+    )
+    
+    env_args = EnvArgs(
+        device="cuda",
+        batch_size=4,
+        eval_batch_size=16,
+        log_every=100,
+        save_every=1000,
+        gradient_accumulation_steps=1,
+        logging_tool="wandb"
+    )
+    
+    # ═══════════════════════════════════════════════════════════
+    # 2. 加载模型
+    # ═══════════════════════════════════════════════════════════
+    
+    generator = LoRAStyleGAN(model_args, env_args)
+    generator.load_network(model_args.model_ckpt)
+    
+    wm_key = LoRAWatermarkingKey(wm_key_args, env_args)
+    
+    # ═══════════════════════════════════════════════════════════
+    # 3. 开始训练
+    # ═══════════════════════════════════════════════════════════
+    
+    trainer = LoRAWatermarkTrainer(embed_args, env_args)
+    trainer.train(
+        generator=generator,
+        wm_key=wm_key,
+        lora_rank=8,          # 可调整：4/8/16
+        lora_alpha=1. 0,
+        target_layers='all'   # 或 'conv_only', 'late_layers'
+    )
+
+
+if __name__ == "__main__":
+    main()
