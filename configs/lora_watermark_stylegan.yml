@@ -33,9 +33,8 @@ lora:
 # Training Configuration
 # ───────────────────────────────────────────────────────────
 training:
-  lr: 0.001                 # ← 关键！不要写成 "0. 001" 或 "1e-3"
-  # 或者使用科学计数法（不加引号）：
-  # lr: 1. 0e-3
+  lr: 0.0001                # Reduced from 0.001 for stability
+  # lr: 1.0e-4
   
   batch_size: 4
   eval_batch_size: 16
